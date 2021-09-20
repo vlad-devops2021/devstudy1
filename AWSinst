@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "DevOps. Create 2 Ubuntu 20.04 LTS servers in AWS"
+Resources:
+  DevOpsSG:                               # Создаём Security Group
+    Type: "AWS::EC2::SecurityGroup"
+    Properties: 
+      GroupDescription: "Security Group to access oue servers"
+      GroupName: DevOpsSG
+
+  SSHIngress:                             # Даём нам доступ по SSH
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      GroupName: !Ref DevOpsSG
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      CidrIp: 0.0.0.0/0
+
+  ServerA:                                # Поднимаем первый сервер
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: "ami-0502e817a62226e03"    # Ubuntu 20.04 LTS x64
+      InstanceType: t2.micro
+      KeyName: devops                     # Замените на свой ключ, созданный в AWS->EC2->Key Pairs
+      SecurityGroupIds:
+        - !GetAtt DevOpsSG.GroupId
+      Tags:
+        - Key: "Name"
+          Value: "DevOps-Server1"
+      UserData:                           # Сразу обновимся
+        Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            apt update
+            apt -y upgrade
+
+  ServerB:                                # Поднимаем второй сервер
+    Type: "AWS::EC2::Instance"
+    Properties: 
+      ImageId: "ami-0502e817a62226e03"    # Ubuntu 20.04 LTS x64
+      InstanceType: t2.micro
+      KeyName: devops                     # Замените на свой ключ, созданный в AWS->EC2->Key Pairs
+      SecurityGroupIds:
+        - !GetAtt DevOpsSG.GroupId
+      Tags:
+        - Key: "Name"
+          Value: "DevOps-Server2"
+      UserData:                           # Сразу обновимся
+        Fn::Base64: !Sub |
+            #!/bin/bash -xe
+            apt update
+            apt -y upgrade
